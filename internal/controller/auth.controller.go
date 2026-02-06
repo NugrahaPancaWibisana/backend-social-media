@@ -104,7 +104,7 @@ func (ac *AuthController) Register(ctx *gin.Context) {
 //	@Success		200		{object}	dto.ResponseSuccess
 //	@Failure		400		{object}	dto.ResponseError
 //	@Failure		401		{object}	dto.ResponseError
-//	@Router			/auth/ [post]
+//	@Router			/auth/login [post]
 func (ac *AuthController) Login(ctx *gin.Context) {
 	var req dto.LoginRequest
 
