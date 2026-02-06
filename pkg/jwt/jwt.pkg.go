@@ -14,11 +14,10 @@ type JwtClaims struct {
 	*dto.JWTClaims
 }
 
-func NewJWTClaims(id int, role string) *JwtClaims {
+func NewJWTClaims(id int) *JwtClaims {
 	return &JwtClaims{
 		JWTClaims: &dto.JWTClaims{
 			UserID: id,
-			Role:   role,
 			RegisteredClaims: jwt.RegisteredClaims{
 				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 				Issuer:    os.Getenv("JWT_ISSUER"),

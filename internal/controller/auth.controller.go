@@ -92,3 +92,72 @@ func (ac *AuthController) Register(ctx *gin.Context) {
 
 	response.Success(ctx, http.StatusCreated, "Registration successful", nil)
 }
+
+// Login godoc
+//
+//	@Summary		User login
+//	@Description	Authenticate user with email and password
+//	@Tags			Auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.LoginRequest	true	"Login credentials"
+//	@Success		200		{object}	dto.ResponseSuccess
+//	@Failure		400		{object}	dto.ResponseError
+//	@Failure		401		{object}	dto.ResponseError
+//	@Router			/auth/login [post]
+func (ac *AuthController) Login(ctx *gin.Context) {
+	var req dto.LoginRequest
+
+	if err := ctx.ShouldBindWith(&req, binding.JSON); err != nil {
+		errStr := err.Error()
+
+		if strings.Contains(errStr, "Email") && strings.Contains(errStr, "required") {
+			response.Error(ctx, http.StatusBadRequest, "Email field cannot be empty")
+			return
+		}
+
+		if strings.Contains(errStr, "Email") && strings.Contains(errStr, "email") {
+			response.Error(ctx, http.StatusBadRequest, "Email must be a valid email address")
+			return
+		}
+
+		if strings.Contains(errStr, "Password") && strings.Contains(errStr, "required") {
+			response.Error(ctx, http.StatusBadRequest, "Password field cannot be empty")
+			return
+		}
+
+		if strings.Contains(errStr, "Password") && strings.Contains(errStr, "min") {
+			response.Error(ctx, http.StatusBadRequest, "Password must be at least 8 characters")
+			return
+		}
+
+		response.Error(ctx, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	data, err := ac.authService.Login(ctx, req)
+	if err != nil {
+		if errors.Is(err, apperror.ErrInvalidEmailFormat) {
+			response.Error(ctx, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		if errors.Is(err, apperror.ErrUserNotFound) || errors.Is(err, apperror.ErrInvalidCredential) {
+			response.Error(ctx, http.StatusUnauthorized, "Invalid email or password")
+			return
+		}
+
+		response.Error(ctx, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	token, err := ac.authService.GenerateJWT(ctx, data)
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	ac.authService.WhitelistToken(ctx, data.ID, token)
+
+	response.Success(ctx, http.StatusOK, "Login successful", dto.JWT{Token: token})
+}

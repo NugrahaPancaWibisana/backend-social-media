@@ -2,11 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"log"
 	"strings"
 
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/apperror"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/dto"
+	"github.com/NugrahaPancaWibisana/backend-social-media/internal/model"
+	"github.com/jackc/pgx/v5"
 )
 
 type AuthRepository struct{}
@@ -47,6 +50,58 @@ func (ar *AuthRepository) CreateUser(ctx context.Context, db DBTX, id int) error
 
 	if _, err := db.Exec(ctx, sql, id); err != nil {
 		log.Println("ERROR [repostory:auth] failed to create user profile:", err)
+		return err
+	}
+
+	return nil
+}
+
+func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (model.User, error) {
+	query := `
+		SELECT
+		    id,
+		    email,
+			password
+		FROM
+			accounts
+		WHERE 
+			email = $1 
+			AND deleted_at IS NULL;
+	`
+
+	row := db.QueryRow(ctx, query, email)
+
+	var user model.User
+	err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+	)
+
+	if err != nil {
+		log.Println("ERROR [repostory:auth] failed to login:", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.User{}, apperror.ErrUserNotFound
+		}
+		return model.User{}, err
+	}
+
+	return user, nil
+}
+
+func (ar *AuthRepository) UpdateLastLogin(ctx context.Context, db DBTX, id int) error {
+	query := `
+		UPDATE 
+			accounts
+		SET
+		    lastlogin_at = NOW()
+		WHERE
+		    id = $1;
+	`
+
+	_, err := db.Exec(ctx, query, id)
+	if err != nil {
+		log.Println("ERROR [repostory:auth] failed to update last login:", err)
 		return err
 	}
 
