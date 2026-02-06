@@ -61,7 +61,7 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 		SELECT
 		    id,
 		    email,
-			password,
+			password
 		FROM
 			accounts
 		WHERE 
