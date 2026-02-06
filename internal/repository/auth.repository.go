@@ -57,7 +57,7 @@ func (ar *AuthRepository) CreateUser(ctx context.Context, db DBTX, id int) error
 }
 
 func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (model.Account, error) {
-	query := `
+	sql := `
 		SELECT
 		    id,
 		    email,
@@ -69,7 +69,7 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 			AND deleted_at IS NULL;
 	`
 
-	row := db.QueryRow(ctx, query, email)
+	row := db.QueryRow(ctx, sql, email)
 
 	var user model.Account
 	err := row.Scan(
@@ -90,7 +90,7 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 }
 
 func (ar *AuthRepository) UpdateLastLogin(ctx context.Context, db DBTX, id int) error {
-	query := `
+	sql := `
 		UPDATE 
 			accounts
 		SET
@@ -99,7 +99,7 @@ func (ar *AuthRepository) UpdateLastLogin(ctx context.Context, db DBTX, id int) 
 		    id = $1;
 	`
 
-	_, err := db.Exec(ctx, query, id)
+	_, err := db.Exec(ctx, sql, id)
 	if err != nil {
 		log.Println("ERROR [repostory:auth] failed to update last login:", err)
 		return err

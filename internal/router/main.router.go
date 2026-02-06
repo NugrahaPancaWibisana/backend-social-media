@@ -15,6 +15,7 @@ func Init(app *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 	app.Use(middleware.CORSMiddleware())
 
 	AuthRouter(app, db, rdb)
+	UserRouter(app, db, rdb)
 
 	app.Static("/static/img", "public")
 	app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

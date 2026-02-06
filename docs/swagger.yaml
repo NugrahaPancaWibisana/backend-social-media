@@ -31,6 +31,15 @@ definitions:
     - email
     - password
     type: object
+  dto.Response:
+    properties:
+      message:
+        example: Data retrieved successfully
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
   dto.ResponseError:
     properties:
       error:
@@ -144,6 +153,25 @@ paths:
       summary: Register new user
       tags:
       - Auth
+  /users/profile:
+    get:
+      description: Get authenticated user's profile information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - Users
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.
