@@ -167,9 +167,54 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/dto.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
       security:
       - BearerAuth: []
       summary: Get user profile
+      tags:
+      - Users
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Update authenticated user's profile information
+      parameters:
+      - description: Profile avatar
+        in: formData
+        name: avatar
+        type: file
+      - description: Name (min 3 chars)
+        in: formData
+        name: name
+        type: string
+      - description: bio (min 3 chars)
+        in: formData
+        name: bio
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ResponseSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
       tags:
       - Users
 securityDefinitions:
