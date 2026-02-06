@@ -14,7 +14,7 @@ type JwtClaims struct {
 	*dto.JWTClaims
 }
 
-func NewJWTClaims(id int, role string) *JwtClaims {
+func NewJWTClaims(id int) *JwtClaims {
 	return &JwtClaims{
 		JWTClaims: &dto.JWTClaims{
 			UserID: id,
