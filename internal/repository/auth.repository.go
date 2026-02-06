@@ -56,7 +56,7 @@ func (ar *AuthRepository) CreateUser(ctx context.Context, db DBTX, id int) error
 	return nil
 }
 
-func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (model.User, error) {
+func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (model.Account, error) {
 	query := `
 		SELECT
 		    id,
@@ -71,7 +71,7 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 
 	row := db.QueryRow(ctx, query, email)
 
-	var user model.User
+	var user model.Account
 	err := row.Scan(
 		&user.ID,
 		&user.Email,
@@ -81,9 +81,9 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 	if err != nil {
 		log.Println("ERROR [repostory:auth] failed to login:", err)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return model.User{}, apperror.ErrUserNotFound
+			return model.Account{}, apperror.ErrUserNotFound
 		}
-		return model.User{}, err
+		return model.Account{}, err
 	}
 
 	return user, nil
