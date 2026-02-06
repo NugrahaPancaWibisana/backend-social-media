@@ -9,6 +9,7 @@ import (
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/dto"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/repository"
 	hashutil "github.com/NugrahaPancaWibisana/backend-social-media/pkg/hash"
+	jwtutil "github.com/NugrahaPancaWibisana/backend-social-media/pkg/jwt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
@@ -118,4 +119,9 @@ func (as *AuthService) Login(ctx context.Context, req dto.LoginRequest) (dto.Acc
 	}
 
 	return res, nil
+}
+
+func (as *AuthService) GenerateJWT(ctx context.Context, user dto.Account) (string, error) {
+	claims := jwtutil.NewJWTClaims(user.ID)
+	return claims.GenToken()
 }
