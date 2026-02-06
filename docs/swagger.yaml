@@ -90,6 +90,30 @@ paths:
       summary: User login
       tags:
       - Auth
+  /auth/logout:
+    delete:
+      description: Logout user and invalidate token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ResponseSuccess'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
+      security:
+      - BearerAuth: []
+      - BearerAuth: []
+      summary: User logout
+      tags:
+      - Auth
   /auth/register:
     post:
       consumes:

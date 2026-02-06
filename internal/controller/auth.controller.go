@@ -167,13 +167,13 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 //
 //	@Summary		User logout
 //	@Description	Logout user and invalidate token
-//	@Tags			auth
+//	@Tags			Auth
 //	@Produce		json
 //	@Security		BearerAuth
 //	@Success		200	{object}	dto.ResponseSuccess
 //	@Failure		401	{object}	dto.ResponseError
 //	@Failure		500	{object}	dto.ResponseError
-//	@Router			/auth/login [delete]
+//	@Router			/auth/logout [delete]
 //	@Security		BearerAuth
 func (ac *AuthController) Logout(ctx *gin.Context) {
 	token := strings.Split(ctx.GetHeader("Authorization"), " ")
@@ -191,6 +191,11 @@ func (ac *AuthController) Logout(ctx *gin.Context) {
 
 	err := ac.authService.Logout(ctx, accessToken.UserID)
 	if err != nil {
+		if errors.Is(err, apperror.ErrLogoutFailed) {
+			response.Error(ctx, http.StatusUnauthorized, err.Error())
+			return
+		}
+
 		response.Error(ctx, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}

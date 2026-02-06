@@ -48,7 +48,7 @@ func Error(ctx *gin.Context, statusCode int, message string) {
 func Abort(ctx *gin.Context, statusCode int, message string) {
 	ctx.AbortWithStatusJSON(statusCode, dto.ResponseError{
 		Response: dto.Response{
-			Status:  "success",
+			Status:  "error",
 			Message: message,
 		},
 		Error: http.StatusText(statusCode),
