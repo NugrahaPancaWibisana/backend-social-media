@@ -1,0 +1,58 @@
+services:
+
+  # Database Postgres
+  postgres:
+    image: postgres:18
+    env_file: .env.local
+    networks:
+      - backend
+    volumes:
+      - postgres:/var/lib/postgresql/18/docker
+
+  # Caching Redis
+  redis:
+    image: redis:8.4
+    networks:
+      - backend
+    volumes:
+      - redis:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: /usr/local/etc/redis/redis.conf
+
+  # Backend Go Gin-Gonic
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env.production
+    networks:
+      - backend
+
+  # Web Server Nginx
+  nginx:
+    image: nginx:1.28
+    ports:
+      - "80:80"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - backend
+
+# Network
+networks:
+  backend:
+
+# Volume
+volumes:
+  postgres:
+    external: true
+  redis:
+    external: true
+  backend:
+    external: true 
