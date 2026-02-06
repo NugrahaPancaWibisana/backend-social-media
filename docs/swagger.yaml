@@ -60,7 +60,7 @@ info:
   title: Backend Social Media
   version: "1.0"
 paths:
-  /auth/:
+  /auth/login:
     post:
       consumes:
       - application/json
