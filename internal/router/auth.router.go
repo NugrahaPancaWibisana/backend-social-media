@@ -17,4 +17,5 @@ func AuthRouter(app *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 	authController := controller.NewAuthController(authService)
 
 	authRouter.POST("/register", authController.Register)
+	authRouter.POST("/login", authController.Register)
 }
