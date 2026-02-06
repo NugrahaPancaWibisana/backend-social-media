@@ -94,7 +94,7 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 func (ar *AuthRepository) UpdateLastLogin(ctx context.Context, db DBTX, id int) error {
 	query := `
 		UPDATE 
-			users
+			accounts
 		SET
 		    lastlogin_at = NOW()
 		WHERE
