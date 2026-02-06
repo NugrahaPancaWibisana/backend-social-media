@@ -19,4 +19,5 @@ func UserRouter(app *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 	userController := controller.NewUserController(userService)
 
 	userRouter.GET("/profile", userController.GetProfile)
+	userRouter.PATCH("/profile", userController.UpdateProfile)
 }
