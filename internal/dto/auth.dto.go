@@ -8,7 +8,6 @@ import (
 
 type JWTClaims struct {
 	UserID int    `json:"id"`
-	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
