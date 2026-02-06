@@ -1,5 +1,7 @@
 package dto
 
+import "mime/multipart"
+
 type RegisterRequest struct {
 	Email           string `json:"email" binding:"required,email" example:"user@example.com"`
 	Password        string `json:"password" binding:"required,min=8" example:"user123@"`
@@ -9,4 +11,10 @@ type RegisterRequest struct {
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required,email" example:"user@example.com"`
 	Password string `json:"password" binding:"required,min=8" example:"user123@"`
+}
+
+type UpdateProfileRequest struct {
+	Avatar *multipart.FileHeader `form:"avatar"`
+	Name   string                `form:"name" binding:"omitempty,min=3" example:"John Doe"`
+	Bio    string                `form:"bio" binding:"omitempty,min=3" example:"my bio"`
 }
