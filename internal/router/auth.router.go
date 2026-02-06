@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/controller"
+	"github.com/NugrahaPancaWibisana/backend-social-media/internal/middleware"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/repository"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/service"
 	"github.com/gin-gonic/gin"
@@ -18,4 +19,5 @@ func AuthRouter(app *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 
 	authRouter.POST("/register", authController.Register)
 	authRouter.POST("/login", authController.Login)
+	authRouter.DELETE("/logout", middleware.AuthMiddleware(), authController.Logout)
 }

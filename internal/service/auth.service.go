@@ -125,3 +125,7 @@ func (as *AuthService) GenerateJWT(ctx context.Context, user dto.Account) (strin
 func (as *AuthService) WhitelistToken(ctx context.Context, id int, token string) {
 	cache.SetToken(ctx, as.redis, id, token)
 }
+
+func (as *AuthService) Logout(ctx context.Context, userID int) error {
+	return cache.DeleteToken(ctx, as.redis, userID)
+}

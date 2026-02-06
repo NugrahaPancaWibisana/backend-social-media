@@ -9,6 +9,7 @@ import (
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/dto"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/response"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/service"
+	jwtutil "github.com/NugrahaPancaWibisana/backend-social-media/pkg/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -160,4 +161,44 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	ac.authService.WhitelistToken(ctx, data.ID, token)
 
 	response.Success(ctx, http.StatusOK, "Login successful", dto.JWT{Token: token})
+}
+
+// Logout godoc
+//
+//	@Summary		User logout
+//	@Description	Logout user and invalidate token
+//	@Tags			Auth
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	dto.ResponseSuccess
+//	@Failure		401	{object}	dto.ResponseError
+//	@Failure		500	{object}	dto.ResponseError
+//	@Router			/auth/logout [delete]
+//	@Security		BearerAuth
+func (ac *AuthController) Logout(ctx *gin.Context) {
+	token := strings.Split(ctx.GetHeader("Authorization"), " ")
+	if len(token) != 2 {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+	if token[0] != "Bearer" {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+
+	tokenData, _ := ctx.Get("token")
+	accessToken, _ := tokenData.(jwtutil.JwtClaims)
+
+	err := ac.authService.Logout(ctx, accessToken.UserID)
+	if err != nil {
+		if errors.Is(err, apperror.ErrLogoutFailed) {
+			response.Error(ctx, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		response.Error(ctx, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, "Logout successful", nil)
 }
