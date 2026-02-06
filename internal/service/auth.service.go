@@ -64,3 +64,58 @@ func (as *AuthService) Register(ctx context.Context, req dto.RegisterRequest) er
 
 	return nil
 }
+
+func (as *AuthService) Login(ctx context.Context, req dto.LoginRequest) (dto.Account, error) {
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	matched, _ := regexp.MatchString(emailRegex, req.Email)
+	if !matched {
+		return dto.Account{}, apperror.ErrInvalidEmailFormat
+	}
+
+	tx, err := as.db.Begin(ctx)
+	if err != nil {
+		log.Println("ERROR [service:auth] failed to begin:", err)
+		return dto.Account{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	data, err := as.authRepository.Login(ctx, tx, req.Email)
+	if err != nil {
+		log.Println("ERROR [service:auth] failed to login:", err)
+		return dto.Account{}, err
+	}
+
+	hasher := hashutil.Default()
+	isValid, err := hasher.Verify(req.Password, data.Password)
+	if err != nil {
+		log.Println("ERROR [service:auth] failed to verify password:", err)
+		return dto.Account{}, err
+	}
+	if !isValid {
+		log.Println("ERROR [service:auth] failed, invalid credential:", err)
+		return dto.Account{}, apperror.ErrInvalidCredential
+	}
+
+	err = as.authRepository.UpdateLastLogin(ctx, tx, data.ID)
+	if err != nil {
+		log.Println("ERROR [service:auth] failed to update last login:", err)
+		return dto.Account{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		log.Println("ERROR [service:auth] failed to commit:", err)
+		return dto.Account{}, err
+	}
+
+	res := dto.Account{
+		ID:          data.ID,
+		Email:       data.Email,
+		LastLoginAt: nil,
+	}
+
+	if data.LastLoginAt.Valid {
+		res.LastLoginAt = &data.LastLoginAt.Time
+	}
+
+	return res, nil
+}
