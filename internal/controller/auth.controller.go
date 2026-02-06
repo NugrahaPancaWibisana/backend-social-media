@@ -32,7 +32,7 @@ func NewAuthController(authService *service.AuthService) *AuthController {
 //	@Success		201		{object}	dto.ResponseSuccess
 //	@Failure		400		{object}	dto.ResponseError
 //	@Failure		500		{object}	dto.ResponseError
-//	@Router			/auth/register/ [post]
+//	@Router			/auth/register [post]
 func (ac *AuthController) Register(ctx *gin.Context) {
 	var req dto.RegisterRequest
 
