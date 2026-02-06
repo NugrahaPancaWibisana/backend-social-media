@@ -112,11 +112,6 @@ func (as *AuthService) Login(ctx context.Context, req dto.LoginRequest) (dto.Acc
 	res := dto.Account{
 		ID:          data.ID,
 		Email:       data.Email,
-		LastLoginAt: nil,
-	}
-
-	if data.LastLoginAt.Valid {
-		res.LastLoginAt = &data.LastLoginAt.Time
 	}
 
 	return res, nil

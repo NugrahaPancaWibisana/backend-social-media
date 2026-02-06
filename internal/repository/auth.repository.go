@@ -62,7 +62,6 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 		    id,
 		    email,
 			password,
-			lastlogin_at
 		FROM
 			accounts
 		WHERE 
@@ -77,7 +76,6 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 		&user.ID,
 		&user.Email,
 		&user.Password,
-		&user.LastLoginAt,
 	)
 
 	if err != nil {

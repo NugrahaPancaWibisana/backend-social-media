@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"time"
-
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -18,5 +16,4 @@ type JWT struct {
 type Account struct {
 	ID          int        `json:"id" example:"1"`
 	Email       string     `json:"email" example:"user@example.com"`
-	LastLoginAt *time.Time `json:"lastlogin_at" example:"2026-02-06T14:30:45+01:00"`
 }
