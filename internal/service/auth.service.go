@@ -8,6 +8,7 @@ import (
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/apperror"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/dto"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/repository"
+	hashutil "github.com/NugrahaPancaWibisana/backend-social-media/pkg/hash"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
@@ -28,6 +29,15 @@ func (as *AuthService) Register(ctx context.Context, req dto.RegisterRequest) er
 	if !matched {
 		return apperror.ErrInvalidEmailFormat
 	}
+
+	hasher := hashutil.Default()
+	hashedPassword, err := hasher.Hash(req.Password)
+	if err != nil {
+		log.Println("ERROR [service:auth] failed to hash:", err)
+		return err
+	}
+
+	req.Password = hashedPassword
 
 	tx, err := as.db.Begin(ctx)
 	if err != nil {
