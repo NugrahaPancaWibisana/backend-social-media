@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/apperror"
+	"github.com/NugrahaPancaWibisana/backend-social-media/internal/cache"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/dto"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/repository"
 	hashutil "github.com/NugrahaPancaWibisana/backend-social-media/pkg/hash"
@@ -124,4 +125,8 @@ func (as *AuthService) Login(ctx context.Context, req dto.LoginRequest) (dto.Acc
 func (as *AuthService) GenerateJWT(ctx context.Context, user dto.Account) (string, error) {
 	claims := jwtutil.NewJWTClaims(user.ID)
 	return claims.GenToken()
+}
+
+func (as *AuthService) WhitelistToken(ctx context.Context, id int, token string) {
+	cache.SetToken(ctx, as.redis, id, token)
 }
