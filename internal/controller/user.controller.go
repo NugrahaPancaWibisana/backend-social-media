@@ -3,6 +3,9 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"net/http"
 	"os"
@@ -123,10 +126,38 @@ func (uc *UserController) UpdateProfile(ctx *gin.Context) {
 	var imagePath string
 
 	if req.Avatar != nil {
+		const maxFileSize = 2 * 1024 * 1024
+		if req.Avatar.Size > maxFileSize {
+			response.Error(ctx, http.StatusBadRequest, "File size must not exceed 2 MB")
+			return
+		}
+
 		ext := strings.ToLower(path.Ext(req.Avatar.Filename))
 		re := regexp.MustCompile(`^\.(jpg|png)$`)
 		if !re.MatchString(ext) {
 			response.Error(ctx, http.StatusBadRequest, "File must be jpg or png")
+			return
+		}
+
+		file, err := req.Avatar.Open()
+		if err != nil {
+			log.Println("failed to open uploaded file:", err.Error())
+			response.Error(ctx, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			return
+		}
+		defer file.Close()
+
+		img, _, err := image.DecodeConfig(file)
+		if err != nil {
+			log.Println("failed to decode image:", err.Error())
+			response.Error(ctx, http.StatusBadRequest, "Invalid image file")
+			return
+		}
+
+		const maxWidth = 800
+		const maxHeight = 600
+		if img.Width > maxWidth || img.Height > maxHeight {
+			response.Error(ctx, http.StatusBadRequest, fmt.Sprintf("Image dimensions must not exceed %dx%d pixels", maxWidth, maxHeight))
 			return
 		}
 
