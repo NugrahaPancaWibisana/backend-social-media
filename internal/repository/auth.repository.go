@@ -33,3 +33,19 @@ func (ar *AuthRepository) CreateAccount(ctx context.Context, db DBTX, req dto.Re
 
 	return nil
 }
+
+func (ar *AuthRepository) CreateUser(ctx context.Context, db DBTX, id int) error {
+	sql := `
+		INSERT INTO
+		    users (account_id)
+		VALUES
+		    ($1);
+	`
+
+	if _, err := db.Exec(ctx, sql, id); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
