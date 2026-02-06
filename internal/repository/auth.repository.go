@@ -15,23 +15,26 @@ func NewAuthRepository() *AuthRepository {
 	return &AuthRepository{}
 }
 
-func (ar *AuthRepository) CreateAccount(ctx context.Context, db DBTX, req dto.RegisterRequest) error {
+func (ar *AuthRepository) CreateAccount(ctx context.Context, db DBTX, req dto.RegisterRequest) (int, error) {
 	sql := `
 		INSERT INTO
 		    accounts (email, password)
 		VALUES
 		    ($1, $2)
+		RETURNING id;
 	`
 
-	if _, err := db.Exec(ctx, sql, req.Email, req.Password); err != nil {
+	var id int
+	err := db.QueryRow(ctx, sql, req.Email, req.Password).Scan(&id)
+	if err != nil {
 		log.Println(err.Error())
 		if strings.Contains(err.Error(), "duplicate") {
-			return apperror.ErrEmailAlreadyExists
+			return 0, apperror.ErrEmailAlreadyExists
 		}
-		return err
+		return 0, err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (ar *AuthRepository) CreateUser(ctx context.Context, db DBTX, id int) error {
