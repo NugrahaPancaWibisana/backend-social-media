@@ -91,3 +91,21 @@ func (ar *AuthRepository) Login(ctx context.Context, db DBTX, email string) (mod
 	return user, nil
 }
 
+func (ar *AuthRepository) UpdateLastLogin(ctx context.Context, db DBTX, id int) error {
+	query := `
+		UPDATE 
+			users
+		SET
+		    lastlogin_at = NOW()
+		WHERE
+		    id = $1;
+	`
+
+	_, err := db.Exec(ctx, query, id)
+	if err != nil {
+		log.Println("ERROR [repostory:auth] failed to update last login:", err)
+		return err
+	}
+
+	return nil
+}
