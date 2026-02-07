@@ -35,3 +35,36 @@ func (ps *PostService) CreatePost(ctx context.Context, req dto.PostRequest, id i
 
 	return nil
 }
+
+func (ps *PostService) GetFeedPosts(ctx context.Context, userID int, token string) ([]dto.FeedPost, error) {
+
+	if err := cache.CheckToken(ctx, ps.redis, userID, token); err != nil {
+		log.Println("ERROR [service:feed] token invalid:", err)
+		return nil, err
+	}
+
+	data, err := ps.postRepository.GetFeedPosts(ctx, ps.db, userID)
+	if err != nil {
+		log.Println("ERROR [service:feed] failed to get feed:", err)
+		return nil, err
+	}
+
+	res := make([]dto.FeedPost, 0, len(data))
+	for _, p := range data {
+		res = append(res, dto.FeedPost{
+			ID:        p.ID,
+			Content:   p.Content,
+			Caption:   p.Caption,
+			Likes:     p.LikesCount,
+			Comments:  p.CommentsCount,
+			CreatedAt: p.CreatedAt,
+			Author: dto.Author{
+				ID:     p.UserID,
+				Name:   p.UserName,
+				Avatar: p.UserAvatar,
+			},
+		})
+	}
+
+	return res, nil
+}
