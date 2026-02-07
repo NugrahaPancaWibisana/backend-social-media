@@ -123,3 +123,45 @@ func (ur *UserRepository) UpdateProfile(ctx context.Context, db DBTX, req dto.Up
 
 	return nil
 }
+
+func (ur *UserRepository) GetUsers(ctx context.Context, db DBTX) ([]model.Users, error) {
+	sql := "SELECT account_id as id, name FROM users"
+
+	rows, err := db.Query(ctx, sql)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []model.Users
+	for rows.Next() {
+		var user model.Users
+		if err := rows.Scan(
+			&user.ID,
+			&user.Name,
+		); err != nil {
+			log.Println("ERROR [repostory:user] failed to get users:", err)
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+func (ur *UserRepository) FollowUser(ctx context.Context, db DBTX, followerID, followedID int) error {
+	sql := `
+		INSERT INTO
+		    followers (following_user_id, followed_user_id)
+		VALUES
+		    ($1, $2);
+	`
+
+	_, err := db.Exec(ctx, sql, followerID, followedID)
+	if err != nil {
+		log.Println("ERROR [repository:follow] failed to follow user:", err)
+		return err
+	}
+
+	return nil
+}

@@ -9,3 +9,8 @@ type User struct {
 	Avatar sql.NullString `db:"avatar"`
 	Bio    sql.NullString `db:"bio"`
 }
+
+type Users struct {
+	ID   int            `db:"id"`
+	Name sql.NullString `db:"name"`
+}

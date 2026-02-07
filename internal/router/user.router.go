@@ -20,4 +20,6 @@ func UserRouter(app *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 
 	userRouter.GET("/profile", userController.GetProfile)
 	userRouter.PATCH("/profile", userController.UpdateProfile)
+	userRouter.GET("", userController.GetUsers)
+	userRouter.POST("/:id/follow", userController.FollowUser)
 }
