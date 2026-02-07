@@ -40,7 +40,7 @@ func (pr *PostRepository) GetFeedPosts(ctx context.Context, db DBTX, userID int)
 		    u.name,
 		    u.avatar,
 		    COUNT(DISTINCT l.user_id) AS likes_count,
-		    COUNT(DISTINCT c.user_id) AS comments_count,
+		    COUNT(c.user_id) AS comments_count,
 		    p.created_at
 		FROM
 		    posts p
@@ -91,4 +91,35 @@ func (pr *PostRepository) GetFeedPosts(ctx context.Context, db DBTX, userID int)
 	}
 
 	return posts, nil
+}
+
+func (pr *PostRepository) CreateLike(ctx context.Context, db DBTX, postID string, userID int) error {
+	sql := `
+		INSERT INTO 
+			likes (post_id, user_id)
+		VALUES 
+			($1, $2)
+	`
+
+	if _, err := db.Exec(ctx, sql, postID, userID); err != nil {
+		log.Println("ERROR [repostory:post] failed to like post:", err)
+		return err
+	}
+
+	return nil
+}
+
+func (pr *PostRepository) CreateComment(ctx context.Context, db DBTX, req dto.CreateCommentRequest, userID int) error {
+	sql := `
+		INSERT INTO 
+			comments (comment, post_id, user_id)
+		VALUES ($1, $2, $3)
+	`
+
+	if _, err := db.Exec(ctx, sql, req.Comment, req.PostID, userID); err != nil {
+		log.Println("ERROR [repostory:post] failed to comment post:", err)
+		return err
+	}
+
+	return nil
 }
