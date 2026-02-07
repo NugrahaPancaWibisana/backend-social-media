@@ -68,3 +68,33 @@ func (ps *PostService) GetFeedPosts(ctx context.Context, userID int, token strin
 
 	return res, nil
 }
+
+func (ps *PostService) CreateLike(ctx context.Context, postID string, userID int, token string) error {
+	err := cache.CheckToken(ctx, ps.redis, userID, token)
+	if err != nil {
+		log.Println("ERROR [service:post] failed to like post:", err)
+		return err
+	}
+
+	if err := ps.postRepository.CreateLike(ctx, ps.db, postID, userID); err != nil {
+		log.Println("ERROR [service:post] failed to like post:", err)
+		return err
+	}
+
+	return nil
+}
+
+func (ps *PostService) CreateComment(ctx context.Context, req dto.CreateCommentRequest, userID int, token string) error {
+	err := cache.CheckToken(ctx, ps.redis, userID, token)
+	if err != nil {
+		log.Println("ERROR [service:post] failed to comment post:", err)
+		return err
+	}
+
+	if err := ps.postRepository.CreateComment(ctx, ps.db, req, userID); err != nil {
+		log.Println("ERROR [service:post] failed to comment post:", err)
+		return err
+	}
+
+	return nil
+}

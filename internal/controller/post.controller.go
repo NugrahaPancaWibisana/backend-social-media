@@ -146,3 +146,96 @@ func (pc *PostController) GetFeedPosts(ctx *gin.Context) {
 
 	response.Success(ctx, http.StatusOK, "Feed retrieved successfully", data)
 }
+
+// CreateLike godoc
+//
+//	@Summary		Like a post
+//	@Description	Like a post by post ID
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.LikeRequest	true	"Like request"
+//	@Success		200		{object}	dto.ResponseSuccess
+//	@Failure		400		{object}	dto.ResponseError
+//	@Failure		401		{object}	dto.ResponseError
+//	@Failure		500		{object}	dto.ResponseError
+//	@Router			/posts/like [post]
+//	@Security		BearerAuth
+func (pc *PostController) CreateLike(ctx *gin.Context) {
+	var req dto.LikeRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.Error(ctx, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	token := strings.Split(ctx.GetHeader("Authorization"), " ")
+	if len(token) != 2 {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+	if token[0] != "Bearer" {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+
+	tokenData, _ := ctx.Get("token")
+	accessToken, _ := tokenData.(jwtutil.JwtClaims)
+
+	if err := pc.postService.CreateLike(ctx, req.PostID, accessToken.UserID, token[1]); err != nil {
+		response.Error(ctx, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, "Post liked successfully", nil)
+}
+
+// CreateComment godoc
+//
+//	@Summary		Create a comment
+//	@Description	Create a comment on a post
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.CreateCommentRequest	true	"Comment request"
+//	@Success		201		{object}	dto.ResponseSuccess
+//	@Failure		400		{object}	dto.ResponseError
+//	@Failure		401		{object}	dto.ResponseError
+//	@Failure		500		{object}	dto.ResponseError
+//	@Router			/posts/comment [post]
+//	@Security		BearerAuth
+func (pc *PostController) CreateComment(ctx *gin.Context) {
+	var req dto.CreateCommentRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		errStr := err.Error()
+
+		if strings.Contains(errStr, "Comment") && strings.Contains(errStr, "min") {
+			response.Error(ctx, http.StatusBadRequest, "Comment must be at least 1 character")
+			return
+		}
+
+		response.Error(ctx, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	token := strings.Split(ctx.GetHeader("Authorization"), " ")
+	if len(token) != 2 {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+	if token[0] != "Bearer" {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+
+	tokenData, _ := ctx.Get("token")
+	accessToken, _ := tokenData.(jwtutil.JwtClaims)
+
+	if err := pc.postService.CreateComment(ctx, req, accessToken.UserID, token[1]); err != nil {
+		response.Error(ctx, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	response.Success(ctx, http.StatusCreated, "Comment created successfully", nil)
+}
