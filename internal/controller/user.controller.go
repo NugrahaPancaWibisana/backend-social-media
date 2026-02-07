@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -199,4 +200,98 @@ func (uc *UserController) UpdateProfile(ctx *gin.Context) {
 	}
 
 	response.Success(ctx, http.StatusOK, "Profile updated successfully", nil)
+}
+
+// GetUsers godoc
+//
+//	@Summary		Get users
+//	@Description	Get list of users
+//	@Tags			Users
+//	@Produce		json
+//	@Success		200	{object}	dto.Response
+//	@Failure		401	{object}	dto.ResponseError
+//	@Failure		500	{object}	dto.ResponseError
+//	@Router			/users [get]
+//	@Security		BearerAuth
+func (uc *UserController) GetUsers(ctx *gin.Context) {
+	token := strings.Split(ctx.GetHeader("Authorization"), " ")
+	if len(token) != 2 {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+	if token[0] != "Bearer" {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+
+	tokenData, _ := ctx.Get("token")
+	accessToken, _ := tokenData.(jwtutil.JwtClaims)
+
+	data, err := uc.userService.GetUsers(ctx, accessToken.UserID, token[1])
+	if err != nil {
+		response.Error(
+			ctx,
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+		)
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, "Users retrieved successfully", data)
+}
+
+// FollowUser godoc
+//
+//	@Summary		Follow user
+//	@Description	Follow another user
+//	@Tags			Users
+//	@Produce		json
+//	@Param			id	path	int	true	"User ID to follow"
+//	@Success		200	{object}	dto.ResponseSuccess
+//	@Failure		400	{object}	dto.ResponseError
+//	@Failure		401	{object}	dto.ResponseError
+//	@Failure		500	{object}	dto.ResponseError
+//	@Router			/users/{id}/follow [post]
+//	@Security		BearerAuth
+func (uc *UserController) FollowUser(ctx *gin.Context) {
+	token := strings.Split(ctx.GetHeader("Authorization"), " ")
+	if len(token) != 2 {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+	if token[0] != "Bearer" {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+
+	followedID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "Invalid user id")
+		return
+	}
+
+	tokenData, _ := ctx.Get("token")
+	accessToken, _ := tokenData.(jwtutil.JwtClaims)
+
+	err = uc.userService.FollowUser(
+		ctx,
+		accessToken.UserID,
+		followedID,
+		token[1],
+	)
+	if err != nil {
+		if errors.Is(err, apperror.ErrCannotFollowYourself) {
+			response.Error(ctx, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		response.Error(
+			ctx,
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+		)
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, "User followed successfully", nil)
 }
