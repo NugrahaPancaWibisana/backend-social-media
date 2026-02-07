@@ -16,7 +16,8 @@ func PostRouter(app *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 
 	userRepository := repository.NewPostRepository()
 	userService := service.NewPostService(userRepository, rdb, db)
-	userController := controller.NewPostController(userService)
+	postController := controller.NewPostController(userService)
 
-	postRouter.POST("", userController.CreatePost)
+	postRouter.POST("", postController.CreatePost)
+	postRouter.GET("/feed", postController.GetFeedPosts)
 }
