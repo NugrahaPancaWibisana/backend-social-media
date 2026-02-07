@@ -14,10 +14,12 @@ func PostRouter(app *gin.Engine, db *pgxpool.Pool, rdb *redis.Client) {
 	postRouter := app.Group("/posts")
 	postRouter.Use(middleware.AuthMiddleware())
 
-	userRepository := repository.NewPostRepository()
-	userService := service.NewPostService(userRepository, rdb, db)
-	postController := controller.NewPostController(userService)
+	postRepository := repository.NewPostRepository()
+	postService := service.NewPostService(postRepository, rdb, db)
+	postController := controller.NewPostController(postService)
 
 	postRouter.POST("", postController.CreatePost)
 	postRouter.GET("/feed", postController.GetFeedPosts)
+	postRouter.POST("/like", postController.CreateLike)
+	postRouter.POST("/comment", postController.CreateComment)
 }
