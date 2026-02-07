@@ -153,6 +153,40 @@ paths:
       summary: Register new user
       tags:
       - Auth
+  /posts:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new post
+      parameters:
+      - description: content image
+        in: formData
+        name: content
+        type: file
+      - description: caption (min 3 chars)
+        in: formData
+        name: caption
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ResponseSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Create new post
+      tags:
+      - Posts
   /users/profile:
     get:
       description: Get authenticated user's profile information

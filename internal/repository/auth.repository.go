@@ -31,7 +31,7 @@ func (ar *AuthRepository) CreateAccount(ctx context.Context, db DBTX, req dto.Re
 	err := db.QueryRow(ctx, sql, req.Email, req.Password).Scan(&id)
 	if err != nil {
 		log.Println("ERROR [repostory:auth] failed to create account:", err)
-		if strings.Contains(err.Error(), "duplicate") {
+			if strings.Contains(err.Error(), "duplicate") {
 			return 0, apperror.ErrEmailAlreadyExists
 		}
 		return 0, err
