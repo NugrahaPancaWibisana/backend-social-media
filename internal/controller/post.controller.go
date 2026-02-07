@@ -108,3 +108,41 @@ func (pc *PostController) CreatePost(ctx *gin.Context) {
 
 	response.Success(ctx, http.StatusOK, "Create post successful", nil)
 }
+
+// GetFeedPosts godoc
+//
+//	@Summary		Get feed posts
+//	@Description	Get latest posts from followed users
+//	@Tags			Posts
+//	@Produce		json
+//	@Success		200	{object}	dto.Response
+//	@Failure		401	{object}	dto.ResponseError
+//	@Failure		500	{object}	dto.ResponseError
+//	@Router			/posts/feed [get]
+//	@Security		BearerAuth
+func (pc *PostController) GetFeedPosts(ctx *gin.Context) {
+	token := strings.Split(ctx.GetHeader("Authorization"), " ")
+	if len(token) != 2 || token[0] != "Bearer" {
+		response.Error(ctx, http.StatusUnauthorized, "Invalid Token")
+		return
+	}
+
+	tokenData, _ := ctx.Get("token")
+	accessToken, _ := tokenData.(jwtutil.JwtClaims)
+
+	data, err := pc.postService.GetFeedPosts(
+		ctx,
+		accessToken.UserID,
+		token[1],
+	)
+	if err != nil {
+		response.Error(
+			ctx,
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+		)
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, "Feed retrieved successfully", data)
+}
