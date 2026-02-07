@@ -18,3 +18,8 @@ type UpdateProfileRequest struct {
 	Name   string                `form:"name" binding:"omitempty,min=3" example:"John Doe"`
 	Bio    string                `form:"bio" binding:"omitempty,min=3" example:"my bio"`
 }
+
+type PostRequest struct {
+	Content *multipart.FileHeader `form:"content"`
+	Caption string                `form:"caption" binding:"omitempty,min=3" example:"my caption"`
+}
