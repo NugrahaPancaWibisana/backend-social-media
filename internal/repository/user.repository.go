@@ -154,11 +154,7 @@ func (ur *UserRepository) FollowUser(ctx context.Context, db DBTX, followerID, f
 		INSERT INTO
 		    followers (following_user_id, followed_user_id)
 		VALUES
-		    ($1, $2) ON CONFLICT (following_user_id, followed_user_id) DO
-		UPDATE
-		SET
-		    deleted_at = NULL,
-		    updated_at = now ();
+		    ($1, $2);
 	`
 
 	_, err := db.Exec(ctx, sql, followerID, followedID)
