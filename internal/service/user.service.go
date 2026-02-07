@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/NugrahaPancaWibisana/backend-social-media/internal/apperror"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/cache"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/dto"
 	"github.com/NugrahaPancaWibisana/backend-social-media/internal/repository"
@@ -76,4 +77,45 @@ func (us *UserService) UpdateProfile(ctx context.Context, req dto.UpdateProfileR
 	}
 
 	return oldPath.String, nil
+}
+
+func (us *UserService) GetUsers(ctx context.Context, id int, token string) ([]dto.Users, error) {
+	if err := cache.CheckToken(ctx, us.redis, id, token); err != nil {
+		log.Println("ERROR [service:user] failed to get users:", err)
+		return nil, err
+	}
+
+	data, err := us.userRepository.GetUsers(ctx, us.db)
+	if err != nil {
+		log.Println("ERROR [service:user] failed to get users:", err)
+		return nil, err
+	}
+
+	users := make([]dto.Users, 0, len(data))
+	for _, u := range data {
+		users = append(users, dto.Users{
+			ID:   u.ID,
+			Name: u.Name.String,
+		})
+	}
+
+	return users, nil
+}
+
+func (us *UserService) FollowUser(ctx context.Context, followerID int, followedID int, token string) error {
+	if err := cache.CheckToken(ctx, us.redis, followerID, token); err != nil {
+		log.Println("ERROR [service:user] failed to follow user:", err)
+		return err
+	}
+
+	if followerID == followedID {
+		return apperror.ErrCannotFollowYourself
+	}
+
+	if err := us.userRepository.FollowUser(ctx, us.db, followerID, followedID); err != nil {
+		log.Println("ERROR [service:user] failed to follow user:", err)
+		return err
+	}
+
+	return nil
 }
